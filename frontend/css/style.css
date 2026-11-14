@@ -1,0 +1,27 @@
+body {
+  background-color: #f4f6f9;
+}
+
+/* area de carregando / erro de cada tabela */
+.estado:empty {
+  display: none;
+}
+
+.estado {
+  margin-bottom: 0.75rem;
+}
+
+/* valores em reais alinhados na direita e com numeros com a mesma largura */
+.valor {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.valor-negativo {
+  color: #b02a37;
+}
+
+.valor-positivo {
+  color: #146c43;
+}

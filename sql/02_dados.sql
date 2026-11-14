@@ -1,5 +1,7 @@
 -- Executar depois do 01_schema.sql.
 USE fincore;
+-- acentos: o cliente envia o texto em UTF-8 (sem isso o mysql do container usa latin1 e estraga ã, é etc.)
+SET NAMES utf8mb4;
 
 INSERT INTO agencia (codigo, nome, cidade, uf) VALUES
 ('0001', 'Agência Digital Brasília', 'Brasília', 'DF'),
@@ -75,20 +77,20 @@ INSERT INTO categoria (id_categoria, id_pai, nome, tipo) VALUES
 (9, NULL, 'Financiamentos', 'DESPESA');
 
 -- origem = conta debitada, destino = conta creditada
-INSERT INTO transacao (id_conta_origem, id_conta_destino, id_categoria, tipo, descricao, valor, chave_idempotencia) VALUES
-(1, 2, 1, 'DEPOSITO',      'Salário Ana',               5000.00,  'dep-ana-001'),
-(1, 4, 1, 'DEPOSITO',      'Salário Bruno',             3000.00,  'dep-bru-001'),
-(1, 5, 1, 'DEPOSITO',      'Depósito Carla',            800.00,   'dep-car-001'),
-(1, 6, 1, 'DEPOSITO',      'Vendas do dia',             2500.00,  'dep-pad-001'),
-(2, 6, 8, 'PAGAMENTO',     'Café da manhã',             45.90,    'pag-ana-001'),
-(2, 4, NULL, 'PIX',        'Racha da conta',            300.00,   'pix-ana-001'),
-(2, 3, NULL, 'TRANSFERENCIA', 'Reserva poupança',       1000.00,  'trf-ana-001'),
-(4, 5, 3, 'PAGAMENTO',     'Aluguel',                   1200.00,  'pag-bru-001'),
-(5, 6, 7, 'PAGAMENTO',     'Compras do mês',            120.00,   'pag-car-001'),
-(6, 1, NULL, 'SAQUE',      'Saque no caixa',            500.00,   'saq-pad-001'),
-(1, 4, 9, 'DEPOSITO',      'Crédito do empréstimo 1',   10000.00, 'emp-bru-001'),
-(2, 1, 6, 'PAGAMENTO',     'Aplicação em CDB',          2000.00,  'apl-ana-001'),
-(6, 1, 6, 'PAGAMENTO',     'Aplicação em fundo',        1000.00,  'apl-pad-001');
+INSERT INTO transacao (id_transacao, id_conta_origem, id_conta_destino, id_categoria, tipo, descricao, valor, chave_idempotencia) VALUES
+(1, 1, 2, 1, 'DEPOSITO',      'Salário Ana',               5000.00,  'dep-ana-001'),
+(2, 1, 4, 1, 'DEPOSITO',      'Salário Bruno',             3000.00,  'dep-bru-001'),
+(3, 1, 5, 1, 'DEPOSITO',      'Depósito Carla',            800.00,   'dep-car-001'),
+(4, 1, 6, 1, 'DEPOSITO',      'Vendas do dia',             2500.00,  'dep-pad-001'),
+(5, 2, 6, 8, 'PAGAMENTO',     'Café da manhã',             45.90,    'pag-ana-001'),
+(6, 2, 4, NULL, 'PIX',        'Racha da conta',            300.00,   'pix-ana-001'),
+(7, 2, 3, NULL, 'TRANSFERENCIA', 'Reserva poupança',       1000.00,  'trf-ana-001'),
+(8, 4, 5, 3, 'PAGAMENTO',     'Aluguel',                   1200.00,  'pag-bru-001'),
+(9, 5, 6, 7, 'PAGAMENTO',     'Compras do mês',            120.00,   'pag-car-001'),
+(10, 6, 1, NULL, 'SAQUE',      'Saque no caixa',            500.00,   'saq-pad-001'),
+(11, 1, 4, 9, 'DEPOSITO',      'Crédito do empréstimo 1',   10000.00, 'emp-bru-001'),
+(12, 2, 1, 6, 'PAGAMENTO',     'Aplicação em CDB',          2000.00,  'apl-ana-001'),
+(13, 6, 1, 6, 'PAGAMENTO',     'Aplicação em fundo',        1000.00,  'apl-pad-001');
 
 -- saldo de cada conta = créditos recebidos - débitos realizados
 UPDATE conta
@@ -96,23 +98,23 @@ SET saldo = (SELECT COALESCE(SUM(valor), 0) FROM transacao WHERE id_conta_destin
           - (SELECT COALESCE(SUM(valor), 0) FROM transacao WHERE id_conta_origem = conta.id_conta)
 WHERE id_conta > 0;
 
-INSERT INTO cartao (id_conta, final_numero, bandeira, limite_credito, dia_vencimento) VALUES
-(2, '4321', 'VISA', 6000.00, 10),
-(4, '8765', 'MASTERCARD', 3500.00, 15);
+INSERT INTO cartao (id_cartao, id_conta, final_numero, bandeira, limite_credito, dia_vencimento) VALUES
+(1, 2, '4321', 'VISA', 6000.00, 10),
+(2, 4, '8765', 'MASTERCARD', 3500.00, 15);
 
-INSERT INTO fatura_cartao (id_cartao, competencia, dt_vencimento) VALUES
-(1, DATE_FORMAT(CURDATE(), '%Y-%m-01'), DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 9 DAY)),
-(2, DATE_FORMAT(CURDATE(), '%Y-%m-01'), DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 14 DAY));
+INSERT INTO fatura_cartao (id_fatura, id_cartao, competencia, dt_vencimento) VALUES
+(1, 1, DATE_FORMAT(CURDATE(), '%Y-%m-01'), DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 9 DAY)),
+(2, 2, DATE_FORMAT(CURDATE(), '%Y-%m-01'), DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 14 DAY));
 
-INSERT INTO compra_cartao (id_fatura, id_categoria, estabelecimento, valor, dt_compra) VALUES
-(1, 7, 'Supermercado Bom Preço', 389.40, NOW()),
-(1, 5, 'Cinemax', 64.00, NOW()),
-(1, 4, 'Posto Shell', 210.00, NOW()),
-(2, 8, 'Restaurante Sabor', 132.50, NOW());
+INSERT INTO compra_cartao (id_compra, id_fatura, id_categoria, estabelecimento, valor, dt_compra) VALUES
+(1, 1, 7, 'Supermercado Bom Preço', 389.40, NOW()),
+(2, 1, 5, 'Cinemax', 64.00, NOW()),
+(3, 1, 4, 'Posto Shell', 210.00, NOW()),
+(4, 2, 8, 'Restaurante Sabor', 132.50, NOW());
 
 -- empréstimo do Bruno: 12 parcelas de 934,02 (Tabela Price, 1,8% a.m.), 1ª vencida há 40 dias
-INSERT INTO emprestimo (id_conta, valor_principal, taxa_mensal, qtd_parcelas, dt_contratacao, dt_primeiro_vencimento) VALUES
-(4, 10000.00, 1.8000, 12, DATE_SUB(CURDATE(), INTERVAL 70 DAY), DATE_SUB(CURDATE(), INTERVAL 40 DAY));
+INSERT INTO emprestimo (id_emprestimo, id_conta, valor_principal, taxa_mensal, qtd_parcelas, dt_contratacao, dt_primeiro_vencimento) VALUES
+(1, 4, 10000.00, 1.8000, 12, DATE_SUB(CURDATE(), INTERVAL 70 DAY), DATE_SUB(CURDATE(), INTERVAL 40 DAY));
 
 INSERT INTO parcela_emprestimo (id_emprestimo, nr_parcela, valor_parcela, dt_vencimento) VALUES
 (1, 1, 934.02, DATE_SUB(CURDATE(), INTERVAL 40 DAY)),
@@ -134,9 +136,9 @@ INSERT INTO produto_investimento (nome, tipo, risco, rentab_anual, liquidez_dias
 ('Fundo Multimercado Alpha', 'FUNDO', 'MEDIO', 13.200, 30, 1000.00),
 ('Carteira de Ações Dividendos', 'ACOES', 'ALTO', 16.000, 2, 500.00);
 
-INSERT INTO aplicacao (id_conta, id_produto, id_assessor, valor_aplicado) VALUES
-(2, 1, 2, 2000.00),
-(6, 3, 2, 1000.00);
+INSERT INTO aplicacao (id_aplicacao, id_conta, id_produto, id_assessor, valor_aplicado) VALUES
+(1, 2, 1, 2, 2000.00),
+(2, 6, 3, 2, 1000.00);
 
 INSERT INTO orcamento (id_cliente, id_categoria, competencia, valor_limite) VALUES
 (2, 2, DATE_FORMAT(CURDATE(), '%Y-%m-01'), 800.00),

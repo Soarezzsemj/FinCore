@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinCore - Extrato</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- barra do topo (o data-grupos diz quais grupos veem o link) -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <span class="navbar-brand fw-bold">FinCore</span>
+      <div class="nav">
+        <a class="nav-link text-white-50" href="painel.html">Painel</a>
+        <a class="nav-link text-white-50" href="transferencia.html" data-grupos="ADMIN GERENTE CLIENTE">Transferência</a>
+        <a class="nav-link text-white fw-semibold" href="extrato.html">Extrato</a>
+      </div>
+      <div class="text-white">
+        <span id="usuario-logado"></span>
+        <span id="grupo-logado" class="badge bg-info text-dark ms-1"></span>
+        <button id="botao-sair" class="btn btn-sm btn-outline-light ms-3">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+
+    <h1 class="h4 mb-3">Extrato</h1>
+
+    <!-- extrato (view) -->
+    <section class="card mb-4">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Lançamentos da conta</span>
+        <span class="badge bg-success">View: vw_extrato_conta</span>
+      </div>
+      <div class="card-body">
+        <form id="form-extrato" class="row g-2 align-items-end mb-3">
+          <div class="col-6 col-md-3">
+            <label for="campo-conta-extrato" class="form-label">Conta (ID)</label>
+            <input id="campo-conta-extrato" type="number" min="1" class="form-control" required>
+          </div>
+          <div class="col-6 col-md-2">
+            <button class="btn btn-outline-primary w-100">Ver extrato</button>
+          </div>
+        </form>
+        <div id="estado-extrato" class="estado"></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead><tr><th>Data</th><th>ID</th><th>Tipo</th><th>Descrição</th><th>D/C</th><th class="text-end">Valor</th></tr></thead>
+            <tbody id="tabela-extrato"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/tabelas.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/extrato.js"></script>
+</body>
+</html>

@@ -1,9 +1,17 @@
--- FinCore: banco digital e gestão financeira (MySQL 8.0+)
--- Laboratório de Banco de Dados - GPE17N40158
+-- Executar primeiro (recria o banco fincore do zero).
 
 DROP DATABASE IF EXISTS fincore;
 CREATE DATABASE fincore CHARACTER SET utf8mb4;
 USE fincore;
+-- acentos: o cliente envia o texto em UTF-8 (sem isso o mysql do container usa latin1 e estraga ã, é etc.)
+SET NAMES utf8mb4;
+
+-- geração de IDs (ver 05_funcoes_id.sql)
+-- dados criticos e de alto volume (cliente, conta, transacao, cartao, fatura_cartao, compra_cartao,
+-- emprestimo, aplicacao e usuarios) nao usam AUTO_INCREMENT: o ID vem da fn_gerar_id('tabela'),
+-- o banco controla a numeração numa tabela de sequências e o ID sai antes do INSERT (ajuda nas procedures)
+-- tabelas de apoio pequenas (agencia, funcionario, categoria, produto_investimento e grupos_usuarios)
+-- continuam com AUTO_INCREMENT: poucas linhas, quase não mudam e não guardam dinheiro, o padrão do MySQL basta
 
 CREATE TABLE agencia (
     id_agencia INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,7 +33,7 @@ CREATE TABLE funcionario (
 
 -- supertipo de cliente (PF ou PJ); o endereço é um atributo composto (colunas end_*)
 CREATE TABLE cliente (
-    id_cliente  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente  BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     tipo        CHAR(2)      NOT NULL,
     nome_razao  VARCHAR(120) NOT NULL,
     documento   VARCHAR(14)  NOT NULL UNIQUE,
@@ -77,7 +85,7 @@ CREATE TABLE telefone_cliente (
 
 -- supertipo de conta (corrente ou poupança); interna = conta contábil do banco (caixa)
 CREATE TABLE conta (
-    id_conta    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_conta    BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_agencia  INT           NOT NULL,
     id_gerente  INT,
     numero      INT           NOT NULL,
@@ -152,7 +160,7 @@ CREATE TABLE categoria (
 -- Conta x Conta (recursivo, com atributos): cada transação tem uma conta de origem (débito)
 -- e uma de destino (crédito) para o mesmo valor. O estorno aponta para a transação original.
 CREATE TABLE transacao (
-    id_transacao           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_transacao           BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_conta_origem        BIGINT        NOT NULL,
     id_conta_destino       BIGINT        NOT NULL,
     id_categoria           INT,
@@ -176,7 +184,7 @@ CREATE TABLE transacao (
 );
 
 CREATE TABLE cartao (
-    id_cartao      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_cartao      BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_conta       BIGINT        NOT NULL,
     final_numero   CHAR(4)       NOT NULL,
     bandeira       VARCHAR(10)   NOT NULL,
@@ -192,7 +200,7 @@ CREATE TABLE cartao (
 );
 
 CREATE TABLE fatura_cartao (
-    id_fatura     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_fatura     BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_cartao     BIGINT      NOT NULL,
     competencia   DATE        NOT NULL,
     dt_vencimento DATE        NOT NULL,
@@ -204,7 +212,7 @@ CREATE TABLE fatura_cartao (
 );
 
 CREATE TABLE compra_cartao (
-    id_compra       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_compra       BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_fatura       BIGINT       NOT NULL,
     id_categoria    INT,
     estabelecimento VARCHAR(100) NOT NULL,
@@ -218,7 +226,7 @@ CREATE TABLE compra_cartao (
 );
 
 CREATE TABLE emprestimo (
-    id_emprestimo          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_emprestimo          BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_conta               BIGINT        NOT NULL,
     valor_principal        DECIMAL(14,2) NOT NULL,
     taxa_mensal            DECIMAL(7,4)  NOT NULL,
@@ -264,7 +272,7 @@ CREATE TABLE produto_investimento (
 
 -- ternário: conta, produto de investimento e assessor
 CREATE TABLE aplicacao (
-    id_aplicacao   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_aplicacao   BIGINT PRIMARY KEY,  -- ID gerado por fn_gerar_id (05_funcoes_id.sql)
     id_conta       BIGINT        NOT NULL,
     id_produto     INT           NOT NULL,
     id_assessor    INT           NOT NULL,
@@ -296,10 +304,18 @@ CREATE TABLE orcamento (
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- índices para extrato, cobrança e relatórios
+-- índices para extrato, cobrança e relatórios (os novos ficam no 06_views.sql)
+-- obs: PRIMARY KEY e UNIQUE já criam índice sozinhos e o InnoDB cria um pra cada FOREIGN KEY que não tenha
+
+-- extrato: débitos de uma conta em ordem de data (WHERE id_conta_origem = ? ORDER BY dt_hora)
 CREATE INDEX idx_trans_origem  ON transacao (id_conta_origem, dt_hora);
+-- extrato: créditos de uma conta em ordem de data (WHERE id_conta_destino = ? ORDER BY dt_hora)
 CREATE INDEX idx_trans_destino ON transacao (id_conta_destino, dt_hora);
+-- relatório de gastos por categoria num período
 CREATE INDEX idx_trans_cat     ON transacao (id_categoria, dt_hora);
+-- cobrança: parcelas ABERTAS com vencimento já passado (UPDATE 5.1 e sp_pagar_parcela)
 CREATE INDEX idx_parc_cobranca ON parcela_emprestimo (status, dt_vencimento);
+-- contas de um cliente: a PK (id_conta, id_cliente) não ajuda a buscar só por id_cliente
 CREATE INDEX idx_titular_cli   ON titularidade (id_cliente);
+-- soma das compras de uma fatura (vw_fatura_cartao)
 CREATE INDEX idx_compra_fatura ON compra_cartao (id_fatura);

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinCore - Painel</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- barra do topo (o data-grupos diz quais grupos veem o link) -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <span class="navbar-brand fw-bold">FinCore</span>
+      <div class="nav">
+        <a class="nav-link text-white fw-semibold" href="painel.html">Painel</a>
+        <a class="nav-link text-white-50" href="transferencia.html" data-grupos="ADMIN GERENTE CLIENTE">Transferência</a>
+        <a class="nav-link text-white-50" href="extrato.html">Extrato</a>
+      </div>
+      <div class="text-white">
+        <span id="usuario-logado"></span>
+        <span id="grupo-logado" class="badge bg-info text-dark ms-1"></span>
+        <button id="botao-sair" class="btn btn-sm btn-outline-light ms-3">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="h4 mb-0">Painel</h1>
+      <button id="botao-atualizar" class="btn btn-outline-primary">Atualizar</button>
+    </div>
+
+    <!-- saldo por cliente (view) -->
+    <section class="card mb-4" data-grupos="ADMIN GERENTE ATENDENTE">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Saldo por cliente</span>
+        <span class="badge bg-success">View: vw_saldo_cliente</span>
+      </div>
+      <div class="card-body">
+        <div id="estado-saldos" class="estado"></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead><tr><th>Cliente</th><th>Tipo</th><th class="text-end">Contas</th><th class="text-end">Saldo total</th></tr></thead>
+            <tbody id="tabela-saldos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- clientes (tabela) -->
+    <section class="card mb-4" data-grupos="ADMIN GERENTE ATENDENTE">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Clientes</span>
+        <span class="badge bg-primary">Tabela: cliente</span>
+      </div>
+      <div class="card-body">
+        <div id="estado-clientes" class="estado"></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead><tr><th>ID</th><th>Nome / Razão social</th><th>Tipo</th><th>Documento</th><th>E-mail</th><th>Cidade</th><th>Status</th></tr></thead>
+            <tbody id="tabela-clientes"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- contas (view), todos os grupos; o cliente ve so as dele -->
+    <section class="card mb-4">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Contas</span>
+        <span class="badge bg-success">View: vw_contas_cliente</span>
+      </div>
+      <div class="card-body">
+        <div id="estado-contas" class="estado"></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead><tr><th>ID</th><th>Agência / Conta</th><th>Tipo</th><th>Titular</th><th>Status</th><th class="text-end">Saldo</th><th class="text-end">Disponível</th></tr></thead>
+            <tbody id="tabela-contas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/tabelas.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/painel.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# testes rapidos da api (vs code com a extensao rest client, ou visual studio)
+# 1) roda o login, 2) copia o token da resposta pro @token, 3) roda as outras
+@api = http://localhost:3000
+@token = cole_o_token_aqui
+
+### saude (publica): mostra o usuario do mysql usado pela api
+GET {{api}}/api/saude
+
+### login
+POST {{api}}/api/login
+Content-Type: application/json
+
+{ "login": "admin", "senha": "fincore123" }
+
+### saldos (view vw_saldo_cliente)
+GET {{api}}/api/saldos
+Authorization: Bearer {{token}}
+
+### clientes (tabela cliente)
+GET {{api}}/api/clientes
+Authorization: Bearer {{token}}
+
+### contas (view vw_contas_cliente)
+GET {{api}}/api/contas
+Authorization: Bearer {{token}}
+
+### extrato da conta 2 (view vw_extrato_conta)
+GET {{api}}/api/contas/2/extrato
+Authorization: Bearer {{token}}
+
+### transferencia que da certo (commit), troca a chave a cada envio
+POST {{api}}/api/transferencias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "idContaOrigem": 2, "idContaDestino": 4, "valor": 50, "chave": "http-teste-001" }
+
+### transferencia que falha (rollback): saldo insuficiente
+POST {{api}}/api/transferencias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "idContaOrigem": 2, "idContaDestino": 4, "valor": 1000000, "chave": "http-teste-002" }

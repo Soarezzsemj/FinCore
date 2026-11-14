@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinCore - Entrar</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- barra do topo -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <span class="navbar-brand fw-bold">FinCore</span>
+    </div>
+  </nav>
+
+  <!-- tela de login -->
+  <main class="container my-4">
+    <section class="row justify-content-center">
+      <div class="col-md-5">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h1 class="h4 mb-3">Entrar</h1>
+            <form id="form-login">
+              <div class="mb-3">
+                <label for="campo-login" class="form-label">Login</label>
+                <input id="campo-login" class="form-control" autocomplete="username" required>
+              </div>
+              <div class="mb-3">
+                <label for="campo-senha" class="form-label">Senha</label>
+                <input id="campo-senha" type="password" class="form-control" autocomplete="current-password" required>
+              </div>
+              <button class="btn btn-primary w-100">Entrar</button>
+            </form>
+            <div id="erro-login" class="alert alert-danger mt-3 d-none"></div>
+            <p class="small text-muted mt-3 mb-0">
+              Usuários de teste (senha <code>fincore123</code>):
+              <code>admin</code>, <code>gerente</code>, <code>atendente</code>, <code>ana</code> (cliente).
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

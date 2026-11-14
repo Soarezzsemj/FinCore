@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinCore - Transferência</title>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- barra do topo (o data-grupos diz quais grupos veem o link) -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <span class="navbar-brand fw-bold">FinCore</span>
+      <div class="nav">
+        <a class="nav-link text-white-50" href="painel.html">Painel</a>
+        <a class="nav-link text-white fw-semibold" href="transferencia.html" data-grupos="ADMIN GERENTE CLIENTE">Transferência</a>
+        <a class="nav-link text-white-50" href="extrato.html">Extrato</a>
+      </div>
+      <div class="text-white">
+        <span id="usuario-logado"></span>
+        <span id="grupo-logado" class="badge bg-info text-dark ms-1"></span>
+        <button id="botao-sair" class="btn btn-sm btn-outline-light ms-3">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+
+    <h1 class="h4 mb-3">Transferência</h1>
+
+    <!-- formulario (procedure sp_transferir) -->
+    <section class="card mb-4">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Nova transferência</span>
+        <span class="badge bg-warning text-dark">Procedure: sp_transferir</span>
+      </div>
+      <div class="card-body">
+        <form id="form-transferencia" class="row g-2 align-items-end">
+          <div class="col-6 col-md-2">
+            <label for="campo-origem" class="form-label">Conta origem (ID)</label>
+            <input id="campo-origem" type="number" min="1" class="form-control" required>
+          </div>
+          <div class="col-6 col-md-2">
+            <label for="campo-destino" class="form-label">Conta destino (ID)</label>
+            <input id="campo-destino" type="number" min="1" class="form-control" required>
+          </div>
+          <div class="col-6 col-md-2">
+            <label for="campo-valor" class="form-label">Valor (R$)</label>
+            <input id="campo-valor" type="number" step="0.01" class="form-control" required>
+          </div>
+          <div class="col-6 col-md-4">
+            <label for="campo-chave" class="form-label">Chave (evita repetir a transferência)</label>
+            <input id="campo-chave" class="form-control" required>
+          </div>
+          <div class="col-12 col-md-2">
+            <button class="btn btn-primary w-100">Transferir</button>
+          </div>
+        </form>
+
+        <!-- botoes pra demonstrar commit e rollback na apresentacao -->
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <span class="small text-muted align-self-center">Demonstração:</span>
+          <button id="exemplo-commit" class="btn btn-sm btn-outline-success">Exemplo que dá certo (COMMIT)</button>
+          <button id="exemplo-rollback" class="btn btn-sm btn-outline-danger">Exemplo que falha (ROLLBACK)</button>
+          <button id="exemplo-repetir" class="btn btn-sm btn-outline-secondary">Repetir a última (mesma chave)</button>
+        </div>
+
+        <!-- resultado + saldo antes e depois -->
+        <div id="resultado-transferencia" class="mt-3"></div>
+        <div class="table-responsive">
+          <table id="tabela-comparacao" class="table table-sm mt-2 d-none">
+            <thead><tr><th>Conta</th><th>Titular</th><th class="text-end">Saldo antes</th><th class="text-end">Saldo depois</th></tr></thead>
+            <tbody id="corpo-comparacao"></tbody>
+          </table>
+        </div>
+        <a id="link-extrato" class="btn btn-sm btn-outline-primary d-none" href="extrato.html">Ver no extrato da conta de origem</a>
+      </div>
+    </section>
+
+    <!-- contas (view), atualiza depois de cada tentativa -->
+    <section class="card mb-4">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold">Contas</span>
+        <span class="badge bg-success">View: vw_contas_cliente</span>
+      </div>
+      <div class="card-body">
+        <div id="estado-contas" class="estado"></div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead><tr><th>ID</th><th>Agência / Conta</th><th>Tipo</th><th>Titular</th><th>Status</th><th class="text-end">Saldo</th><th class="text-end">Disponível</th></tr></thead>
+            <tbody id="tabela-contas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/tabelas.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/transferencia.js"></script>
+</body>
+</html>

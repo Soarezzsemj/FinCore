@@ -11,6 +11,10 @@ services:
       # A senha do root vem do arquivo .env (que não vai para o Git).
       # O root só serve para montar o banco; a aplicação usa o app_fincore.
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      # Senhas dos usuários do MySQL criados pelo 04_usuarios_acesso (também do .env).
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_ANALISTA_PASSWORD: ${DB_ANALISTA_PASSWORD}
+      DB_DBA_PASSWORD: ${DB_DBA_PASSWORD}
       TZ: America/Sao_Paulo
     ports:
       # 3307 no seu PC -> 3306 no container (evita conflito com um MySQL já instalado)
@@ -22,11 +26,14 @@ services:
       # O 03_consultas.sql fica de fora de propósito (altera dados e é só para demonstração).
       - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./sql/02_dados.sql:/docker-entrypoint-initdb.d/02_dados.sql:ro
-      # Quando criarem os novos scripts, adicione aqui, por exemplo:
-      # - ./sql/04_usuarios_acesso.sql:/docker-entrypoint-initdb.d/04_usuarios_acesso.sql:ro
-      # - ./sql/05_funcoes_id.sql:/docker-entrypoint-initdb.d/05_funcoes_id.sql:ro
-      # - ./sql/06_views.sql:/docker-entrypoint-initdb.d/06_views.sql:ro
-      # - ./sql/07_triggers_procedures.sql:/docker-entrypoint-initdb.d/07_triggers_procedures.sql:ro
+      # 04: o .sh troca as marcas de senha pelas do .env e roda o .sql.
+      # O .sql fica em outra pasta para o Docker não rodá-lo sozinho (sem as senhas).
+      - ./sql/04_usuarios_acesso.sh:/docker-entrypoint-initdb.d/04_usuarios_acesso.sh:ro
+      - ./sql/04_usuarios_acesso.sql:/fincore-sql/04_usuarios_acesso.sql:ro
+      - ./sql/05_funcoes_id.sql:/docker-entrypoint-initdb.d/05_funcoes_id.sql:ro
+      - ./sql/06_views.sql:/docker-entrypoint-initdb.d/06_views.sql:ro
+      - ./sql/07_triggers_procedures.sql:/docker-entrypoint-initdb.d/07_triggers_procedures.sql:ro
+      # Os scripts de demonstração (06b, 07b) ficam de fora: são para rodar na apresentação.
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
