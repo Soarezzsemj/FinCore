@@ -1,0 +1,38 @@
+# ---------- Segredos (NUNCA subir) ----------
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+*.pfx
+
+# ---------- .NET / C# ----------
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.dbmdl
+.vs/
+*.log
+publish/
+TestResults/
+
+# ---------- Node (caso use JS em algum ponto) ----------
+node_modules/
+npm-debug.log*
+
+# ---------- Docker (dados locais do banco) ----------
+mysql-data/
+
+# ---------- Editores e sistema ----------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Temporários de documento ----------
+~$*
+*.tmp

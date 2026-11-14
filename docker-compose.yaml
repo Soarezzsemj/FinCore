@@ -1,0 +1,37 @@
+# Sobe o MySQL 8 do FinCore.
+# Uso:   docker compose up -d
+# Parar: docker compose down          (mantém os dados)
+# Zerar: docker compose down -v       (apaga o banco e os scripts rodam de novo)
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fincore-mysql
+    restart: unless-stopped
+    environment:
+      # A senha do root vem do arquivo .env (que não vai para o Git).
+      # O root só serve para montar o banco; a aplicação usa o app_fincore.
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: America/Sao_Paulo
+    ports:
+      # 3307 no seu PC -> 3306 no container (evita conflito com um MySQL já instalado)
+      - "3307:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Scripts rodam só na PRIMEIRA criação do banco, em ordem alfabética.
+      # O 03_consultas.sql fica de fora de propósito (altera dados e é só para demonstração).
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/02_dados.sql:/docker-entrypoint-initdb.d/02_dados.sql:ro
+      # Quando criarem os novos scripts, adicione aqui, por exemplo:
+      # - ./sql/04_usuarios_acesso.sql:/docker-entrypoint-initdb.d/04_usuarios_acesso.sql:ro
+      # - ./sql/05_funcoes_id.sql:/docker-entrypoint-initdb.d/05_funcoes_id.sql:ro
+      # - ./sql/06_views.sql:/docker-entrypoint-initdb.d/06_views.sql:ro
+      # - ./sql/07_triggers_procedures.sql:/docker-entrypoint-initdb.d/07_triggers_procedures.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:
