@@ -5,13 +5,14 @@ Trabalho da disciplina **Laboratório de Banco de Dados (GPE17N40158)**.
 
 ## Equipe
 
-| Nome | Responsabilidade principal |
-|------|----------------------------|
-| _KAUAN PIERRE TEIXEIRA DE LIMA_ | _Modelagem conceitual_ |
-| _HEITOR XAVIER CARVALHO_ | _Modelagem lógica e física_ |
-| _CARLOS EDUARDO SOARES SOUZA SANTOS_ | _Scripts SQL (DDL e regras)_ |
-| _CAUAN CARVALHO DOS SANTOS_ | _Dados, consultas e documentação_ |
-| _DANIEL GAMA MACHADO_ | _Diagramas e documento em PDF_ |
+| Integrantes do grupo | 
+|------|
+| _CARLOS EDUARDO SOARES SOUZA SANTOS_ | 
+| _DANIEL GAMA MACHADO_ | 
+| _CAUAN CARVALHO DOS SANTOS_ | 
+| _HEITOR XAVIER CARVALHO_ | 
+| _KAUAN PIERRE TEIXEIRA DE LIMA_ | 
+
 
 Professor(a): _JEFFERSON SALOMAO RODRIGUES_ · Instituição: _Universidade Católica de Brasília_ · Semestre: _2026/2_
 
