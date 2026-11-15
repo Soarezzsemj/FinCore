@@ -1,7 +1,7 @@
 # FinCore — Banco de Dados para Banco Digital e Gestão Financeira
 
 Trabalho da disciplina **Laboratório de Banco de Dados (GPE17N40158)**.
-**Tema:** Finanças · **SGBD:** MySQL 8.0+ · **NoSQL (opcional):** MongoDB 7 (log de auditoria) · **Aplicação:** C# (ASP.NET Core Minimal API) + HTML/Bootstrap
+**Tema:** Finanças · **SGBD:** MySQL 8.0+ · **NoSQL (opcional):** MongoDB 7 (log de auditoria) · **Aplicação:** C# (ASP.NET Core, .NET 10) + HTML/Bootstrap
 
 ## Equipe
 
@@ -35,7 +35,7 @@ login e cada tentativa de transferência, inclusive as que a `sp_transferir` des
 O dinheiro (contas, saldos e transações) continua **só no MySQL**. Veja a seção
 [NoSQL: log de auditoria no MongoDB](#nosql-log-de-auditoria-no-mongodb).
 
-- **Contexto e justificativa:** _(resumo; o texto completo está no PDF em `docs/`)_
+- **Contexto e justificativa:** sistemas financeiros exigem que o dinheiro não se perca nem se duplique, que o histórico não seja apagado e que cada pessoa veja só o que lhe cabe. Por isso as regras ficam no próprio banco (restrições, triggers e procedures), e não na aplicação. O texto completo está no artigo em `docs/`.
 - **Escopo:** cadastro de clientes e contas, movimentações, cartões, empréstimos, investimentos e orçamento.
 - **Fora do escopo:** emissão fiscal, integração com o Banco Central e antifraude.
 
@@ -74,16 +74,13 @@ FinCore/
 │   └── js/                      # JavaScript puro: api.js (sessao + chamadas), tabelas.js, menu.js
 │                                #   e um arquivo por pagina (login.js, painel.js, transferencia.js, extrato.js, auditoria.js)
 └── docs/
-    ├── FinCore_Documento_Final.pdf
-    ├── diagramas/               # DER, modelo lógico e modelo físico
-    ├── roteiro_apresentacao.md  # roteiro de 5 minutos
-    ├── evidencias.md            # comandos que provam que a aplicação não usa root
-    └── artigo/ESTRUTURA.md      # esqueleto do artigo com as justificativas
+    ├── FinCore_Entrega_Final_v4.pdf  # artigo (documento técnico) da entrega
+    └── diagramas/               # DER, modelo lógico e modelo físico
 ```
 
 ## Como rodar do zero
 
-Pré-requisitos: **Docker** (com Docker Compose) e **.NET SDK 9 ou mais novo** (`dotnet --version`).
+Pré-requisitos: **Docker** (com Docker Compose) e **.NET SDK 10** (o projeto usa `net10.0`) (`dotnet --version`).
 
 1. **Configuração.** Copie o modelo e troque as senhas (use só letras, números e `@ # ! _ - .`):
 
@@ -152,12 +149,20 @@ alguns erros são de propósito.
 
 | Usuário | Para quê | Privilégios |
 |---|---|---|
-| `app_fincore` | a API | `SELECT` nas tabelas e views que as telas usam; `INSERT`/`UPDATE` só em `usuarios` e cliente; `EXECUTE` só na `sp_transferir`. Sem `DELETE`, sem DDL, sem alterar saldo ou gravar transação direto |
+| `app_fincore` | a API | `SELECT` nas tabelas e views que as telas usam; `INSERT`/`UPDATE` só em `usuarios` e `cliente`, `INSERT` em `cliente_pf` e `cliente_pj`; `EXECUTE` só na `sp_transferir`. Sem `DELETE`, sem DDL, sem alterar saldo ou gravar transação direto |
 | `analista_fincore` | relatórios | só `SELECT` nas tabelas do domínio financeiro e nas views (sem `usuarios`, `grupos_usuarios` e `sequencia`) |
 | `dba_fincore` | manutenção | tudo, mas só no banco `fincore` (não cria usuários nem repassa permissões) |
 | `root` | montar o banco | usado só pelo Docker/administrador; **a aplicação recusa iniciar se `DB_USER=root`** |
 
-Como provar: veja [`docs/evidencias.md`](docs/evidencias.md).
+**Como provar** (a Seção 9.3 do artigo traz o mesmo roteiro):
+
+- Abra http://localhost:3000/api/saude: mostra `app_fincore@%`, nunca `root`.
+- Conecte como `app_fincore` (`docker exec -it fincore-mysql mysql -uapp_fincore -p`) e rode
+  `SHOW GRANTS FOR CURRENT_USER();`: aparece `USAGE ON *.*`, `SELECT` em tabelas e views específicas e
+  `EXECUTE` só em `sp_transferir`.
+- Ainda como `app_fincore`, `DROP TABLE`, `DELETE`, `UPDATE conta ...` e `INSERT INTO transacao ...`
+  são recusados (erro 1142).
+- Com `DB_USER=root` no `.env`, a API se recusa a iniciar.
 
 ### Usuários da aplicação (tabela `usuarios`)
 
@@ -193,7 +198,7 @@ Sem token, as rotas protegidas devolvem **401**; com um grupo sem permissão, **
 
 | Requisito | Onde está |
 |---|---|
-| Modelagem (DER, lógico, físico) | `docs/diagramas/`, `docs/FinCore_Documento_Final.pdf` |
+| Modelagem (DER, lógico, físico) | `docs/diagramas/`, `docs/FinCore_Entrega_Final_v4.pdf` |
 | Estrutura do banco (DDL, restrições) | `sql/01_schema.sql` |
 | População do banco | `sql/02_dados.sql` |
 | Consultas e conteúdo da disciplina (DML, álgebra relacional) | `sql/03_consultas.sql` |
@@ -206,12 +211,11 @@ Sem token, as rotas protegidas devolvem **401**; com um grupo sem permissão, **
 | Functions e procedures (stored objects) | `sql/05_funcoes_id.sql`, `sql/07_triggers_procedures.sql` (`fn_saldo_disponivel`, `sp_transferir`, `sp_pagar_parcela`) |
 | TCL: `START TRANSACTION`, `COMMIT`, `ROLLBACK` | `sp_transferir` e `sp_pagar_parcela`; demonstração em `sql/07b_demo_transacoes.sql` e no site |
 | Aplicação conectada ao banco | `backend/FinCoreApi/` (`Data/Banco.cs` faz a conexão, `Controllers/` as rotas) + `frontend/` |
-| Aplicação sem root | `.env` (`DB_USER=app_fincore`), `/api/saude`, `docs/evidencias.md` |
+| Aplicação sem root | `.env` (`DB_USER=app_fincore`), `/api/saude` e a seção "Como provar" acima |
 | Login com senha em hash e autorização por grupo | `Controllers/LoginController.cs` e `VerificarAcesso` em `Controllers/BaseController.cs`; links e seções com `data-grupos` nas páginas + `frontend/js/menu.js` |
 | Documentação da API | OpenAPI + Scalar em `/scalar` |
 | NoSQL (opcional) | MongoDB: `Data/Auditoria.cs`, `Controllers/AuditoriaController.cs`, `frontend/auditoria.html` |
-| Roteiro da apresentação | `docs/roteiro_apresentacao.md` |
-| Artigo | `docs/artigo/ESTRUTURA.md` |
+| Documento técnico (artigo acadêmico) | `docs/FinCore_Entrega_Final_v4.pdf` |
 
 ## Modelagem
 
