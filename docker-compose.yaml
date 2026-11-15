@@ -1,7 +1,7 @@
-# Sobe o MySQL 8 do FinCore.
+# Sobe o MySQL 8 e o MongoDB do FinCore.
 # Uso:   docker compose up -d
 # Parar: docker compose down          (mantém os dados)
-# Zerar: docker compose down -v       (apaga o banco e os scripts rodam de novo)
+# Zerar: docker compose down -v       (apaga os bancos e os scripts rodam de novo)
 services:
   mysql:
     image: mysql:8.0
@@ -40,5 +40,16 @@ services:
       timeout: 5s
       retries: 10
 
+  # NoSQL (recurso opcional): guarda o log de auditoria (login e transferências)
+  mongo:
+    image: mongo:7
+    container_name: fincore-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   mysql-data:
+  mongo-data:
