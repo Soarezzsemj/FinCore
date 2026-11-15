@@ -81,9 +81,35 @@ GRANT SELECT                 ON fincore.categoria       TO 'app_fincore'@'%';
 GRANT SELECT, INSERT         ON fincore.transacao       TO 'app_fincore'@'%';
 
 -- 2.2 analista_fincore: relatórios e consultas (Workbench, planilhas)
--- quem só analisa dados nao pode alterar nada, então é só SELECT e só no banco fincore
+-- quem só analisa dados nao pode alterar nada, então é só SELECT, tabela por tabela
+-- fica de fora a autenticação (usuarios, grupos_usuarios) e a sequencia de IDs: com SELECT em
+-- fincore.* o analista leria o hash e o salt das senhas, o que contraria o menor privilégio
+-- (o 06 dá SELECT nas views)
 CREATE USER 'analista_fincore'@'%' IDENTIFIED BY '__SENHA_ANALISTA__';
-GRANT SELECT ON fincore.* TO 'analista_fincore'@'%';
+-- cadastro: agências, funcionários e clientes
+GRANT SELECT ON fincore.agencia              TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.funcionario          TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.cliente              TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.cliente_pf           TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.cliente_pj           TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.telefone_cliente     TO 'analista_fincore'@'%';
+-- contas e movimentações
+GRANT SELECT ON fincore.conta                TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.conta_corrente       TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.conta_poupanca       TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.titularidade         TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.chave_pix            TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.categoria            TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.transacao            TO 'analista_fincore'@'%';
+-- cartões, empréstimos, investimentos e orçamento
+GRANT SELECT ON fincore.cartao               TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.fatura_cartao        TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.compra_cartao        TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.emprestimo           TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.parcela_emprestimo   TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.produto_investimento TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.aplicacao            TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.orcamento            TO 'analista_fincore'@'%';
 
 -- 2.3 dba_fincore: administra o banco fincore (tabelas, índices, views, triggers, procedures, backup)
 -- a manutenção do dia a dia nao deve ser feita com root: tem tudo, mas SÓ no fincore

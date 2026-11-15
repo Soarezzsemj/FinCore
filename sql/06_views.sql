@@ -95,3 +95,9 @@ GRANT SELECT ON fincore.vw_saldo_cliente  TO 'app_fincore'@'%';
 GRANT SELECT ON fincore.vw_contas_cliente TO 'app_fincore'@'%';
 GRANT SELECT ON fincore.vw_extrato_conta  TO 'app_fincore'@'%';
 GRANT SELECT ON fincore.vw_fatura_cartao  TO 'app_fincore'@'%';
+
+-- o analista (só leitura, sem acesso à autenticação) também usa as views nos relatórios
+GRANT SELECT ON fincore.vw_saldo_cliente  TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.vw_contas_cliente TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.vw_extrato_conta  TO 'analista_fincore'@'%';
+GRANT SELECT ON fincore.vw_fatura_cartao  TO 'analista_fincore'@'%';

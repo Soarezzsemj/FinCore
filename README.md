@@ -140,7 +140,7 @@ alguns erros são de propósito.
 | Usuário | Para quê | Privilégios |
 |---|---|---|
 | `app_fincore` | a API | `SELECT` nas tabelas e views que as telas usam; `INSERT`/`UPDATE` só em `usuarios` e cliente; `EXECUTE` só na `sp_transferir`. Sem `DELETE`, sem DDL, sem alterar saldo ou gravar transação direto |
-| `analista_fincore` | relatórios | só `SELECT` no banco `fincore` |
+| `analista_fincore` | relatórios | só `SELECT` nas tabelas do domínio financeiro e nas views (sem `usuarios`, `grupos_usuarios` e `sequencia`) |
 | `dba_fincore` | manutenção | tudo, mas só no banco `fincore` (não cria usuários nem repassa permissões) |
 | `root` | montar o banco | usado só pelo Docker/administrador; **a aplicação recusa iniciar se `DB_USER=root`** |
 
