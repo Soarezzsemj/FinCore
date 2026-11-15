@@ -3,6 +3,7 @@ using System.Text;
 using FinCoreApi.Data;
 using FinCoreApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MySqlConnector;
 
 namespace FinCoreApi.Controllers
@@ -10,7 +11,12 @@ namespace FinCoreApi.Controllers
     [Route("api")]
     public class LoginController : BaseController
     {
-        public LoginController(Banco banco, Sessoes sessoes) : base(banco, sessoes) { }
+        private readonly Auditoria _auditoria;
+
+        public LoginController(Banco banco, Sessoes sessoes, Auditoria auditoria) : base(banco, sessoes)
+        {
+            _auditoria = auditoria;
+        }
 
         [HttpPost("login")]
         [EndpointSummary("Faz login e devolve o token (rota pública)")]
@@ -28,12 +34,19 @@ namespace FinCoreApi.Controllers
 
             // a senha nunca fica guardada, compara o hash de (salt + senha digitada) com o hash do banco
             // mesma mensagem pra login que nao existe e senha errada (nao entrega quais logins existem)
+            // auditoria (mongodb): guarda o login digitado e o motivo, nunca a senha
             if (linhas.Count == 0 || (string)linhas[0]["senha_hash"]! != GerarHash((string)linhas[0]["salt"]!, dto.Senha))
+            {
+                await _auditoria.Registrar("LOGIN_FALHA", dto.Login, new BsonDocument { { "motivo", "login ou senha inválidos" } });
                 return Erro(401, "Login ou senha inválidos");
+            }
 
             var dados = linhas[0];
             if ((string)dados["status"]! != "ATIVO")
+            {
+                await _auditoria.Registrar("LOGIN_FALHA", dto.Login, new BsonDocument { { "motivo", "usuário bloqueado ou inativo" } });
                 return Erro(403, "Usuário bloqueado ou inativo");
+            }
 
             var usuario = new UsuarioLogado
             {
@@ -44,6 +57,7 @@ namespace FinCoreApi.Controllers
             };
 
             var token = _sessoes.Criar(usuario);
+            await _auditoria.Registrar("LOGIN_OK", usuario.Login, new BsonDocument { { "grupo", usuario.Grupo } });
             return Ok(new { token, usuario.Login, usuario.Grupo, usuario.IdCliente });
         }
 

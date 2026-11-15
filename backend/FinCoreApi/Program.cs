@@ -27,9 +27,13 @@ var conexaoBanco = new MySqlConnectionStringBuilder
     Password = ArquivoEnv.Ler("DB_PASSWORD", "")
 }.ConnectionString;
 
-// banco e sessoes sao unicos pra api toda; os controllers recebem eles no construtor
+// endereco do mongodb (log de auditoria, nosql)
+var urlMongo = ArquivoEnv.Ler("MONGO_URL", "mongodb://localhost:27017");
+
+// banco, sessoes e auditoria sao unicos pra api toda; os controllers recebem eles no construtor
 builder.Services.AddSingleton(new Banco(conexaoBanco));
 builder.Services.AddSingleton<Sessoes>();
+builder.Services.AddSingleton(new Auditoria(urlMongo));
 builder.Services.AddControllers();
 
 // documento openapi (/openapi/v1.json) com o login por token (bearer) descrito
